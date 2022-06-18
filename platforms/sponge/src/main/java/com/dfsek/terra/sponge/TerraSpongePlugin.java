@@ -18,6 +18,7 @@
 package com.dfsek.terra.sponge;
 
 import com.google.inject.Inject;
+import net.minecraft.world.level.biome.BiomeSource;
 import org.spongepowered.api.Game;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;

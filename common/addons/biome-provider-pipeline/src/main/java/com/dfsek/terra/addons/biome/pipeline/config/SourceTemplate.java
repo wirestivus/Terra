@@ -9,7 +9,7 @@ package com.dfsek.terra.addons.biome.pipeline.config;
 
 import com.dfsek.tectonic.api.config.template.object.ObjectTemplate;
 
-import com.dfsek.terra.addons.biome.pipeline.source.BiomeSource;
+import com.dfsek.terra.addons.biome.pipeline.api.source.BiomeSource;
 
 
 public abstract class SourceTemplate implements ObjectTemplate<BiomeSource> {

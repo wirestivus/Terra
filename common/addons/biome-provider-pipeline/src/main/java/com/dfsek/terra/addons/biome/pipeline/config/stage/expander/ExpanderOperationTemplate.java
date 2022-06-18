@@ -5,16 +5,16 @@
  * reference the LICENSE file in this module's root directory.
  */
 
-package com.dfsek.terra.addons.biome.pipeline.config.stage.mutator;
+package com.dfsek.terra.addons.biome.pipeline.config.stage.expander;
 
 import com.dfsek.terra.addons.biome.pipeline.api.stage.operation.Operation;
 import com.dfsek.terra.addons.biome.pipeline.config.stage.OperationTemplate;
-import com.dfsek.terra.addons.biome.pipeline.operations.SmoothOperation;
+import com.dfsek.terra.addons.biome.pipeline.operations.ExpandOperation;
 
 
-public class SmoothMutatorTemplate extends OperationTemplate {
+public class ExpanderOperationTemplate extends OperationTemplate {
     @Override
     public Operation get() {
-        return new SmoothOperation(noise);
+        return new ExpandOperation(noise);
     }
 }

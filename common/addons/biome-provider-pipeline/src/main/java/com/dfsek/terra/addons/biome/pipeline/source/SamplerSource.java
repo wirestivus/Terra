@@ -8,8 +8,11 @@
 package com.dfsek.terra.addons.biome.pipeline.source;
 
 import com.dfsek.terra.addons.biome.pipeline.api.delegate.BiomeDelegate;
+import com.dfsek.terra.addons.biome.pipeline.api.source.BiomeSource;
 import com.dfsek.terra.api.noise.NoiseSampler;
 import com.dfsek.terra.api.util.collection.ProbabilityCollection;
+
+import java.util.Collection;
 
 
 public class SamplerSource implements BiomeSource {
@@ -22,12 +25,12 @@ public class SamplerSource implements BiomeSource {
     }
     
     @Override
-    public BiomeDelegate getBiome(double x, double z, long seed) {
+    public BiomeDelegate getBiome(int x, int z, long seed) {
         return biomes.get(sampler, x, z, seed);
     }
     
     @Override
-    public Iterable<BiomeDelegate> getBiomes() {
+    public Collection<BiomeDelegate> getBiomes() {
         return biomes.getContents();
     }
 }

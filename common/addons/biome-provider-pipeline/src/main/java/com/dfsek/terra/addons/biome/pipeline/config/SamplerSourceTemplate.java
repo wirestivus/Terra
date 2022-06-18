@@ -11,7 +11,7 @@ import com.dfsek.tectonic.api.config.template.annotations.Description;
 import com.dfsek.tectonic.api.config.template.annotations.Value;
 
 import com.dfsek.terra.addons.biome.pipeline.api.delegate.BiomeDelegate;
-import com.dfsek.terra.addons.biome.pipeline.source.BiomeSource;
+import com.dfsek.terra.addons.biome.pipeline.api.source.BiomeSource;
 import com.dfsek.terra.addons.biome.pipeline.source.SamplerSource;
 import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.noise.NoiseSampler;

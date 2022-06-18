@@ -12,16 +12,15 @@ import com.dfsek.tectonic.api.config.template.annotations.Value;
 import java.util.Map;
 
 import com.dfsek.terra.addons.biome.pipeline.api.delegate.BiomeDelegate;
-import com.dfsek.terra.addons.biome.pipeline.api.stage.Stage;
-import com.dfsek.terra.addons.biome.pipeline.config.stage.StageTemplate;
-import com.dfsek.terra.addons.biome.pipeline.mutator.BorderListMutator;
-import com.dfsek.terra.addons.biome.pipeline.stages.MutatorStage;
+import com.dfsek.terra.addons.biome.pipeline.api.stage.operation.Operation;
+import com.dfsek.terra.addons.biome.pipeline.config.stage.OperationTemplate;
+import com.dfsek.terra.addons.biome.pipeline.operations.BorderListOperation;
 import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.util.collection.ProbabilityCollection;
 
 
 @SuppressWarnings("unused")
-public class BorderListMutatorTemplate extends StageTemplate {
+public class BorderListMutatorTemplate extends OperationTemplate {
     @Value("from")
     private @Meta String from;
     
@@ -36,7 +35,7 @@ public class BorderListMutatorTemplate extends StageTemplate {
     
     
     @Override
-    public Stage get() {
-        return new MutatorStage(new BorderListMutator(replace, from, defaultReplace, noise, defaultTo));
+    public Operation get() {
+        return new BorderListOperation(from, noise, defaultTo, defaultReplace, replace);
     }
 }

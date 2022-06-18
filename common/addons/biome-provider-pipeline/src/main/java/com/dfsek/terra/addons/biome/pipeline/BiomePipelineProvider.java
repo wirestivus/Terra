@@ -7,23 +7,20 @@
 
 package com.dfsek.terra.addons.biome.pipeline;
 
+import com.dfsek.terra.addons.biome.pipeline.api.delegate.BiomeDelegate;
+import com.dfsek.terra.addons.biome.pipeline.api.source.BiomeSource;
+import com.dfsek.terra.addons.biome.pipeline.api.stage.operation.Operation;
 import com.dfsek.terra.api.util.Column;
-import com.dfsek.terra.api.world.info.WorldProperties;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import net.jafama.FastMath;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
-import com.dfsek.terra.addons.biome.pipeline.api.BiomeHolder;
-import com.dfsek.terra.addons.biome.pipeline.api.delegate.BiomeDelegate;
-import com.dfsek.terra.addons.biome.pipeline.api.stage.Stage;
 import com.dfsek.terra.api.noise.NoiseSampler;
 import com.dfsek.terra.api.registry.key.StringIdentifiable;
 import com.dfsek.terra.api.world.biome.Biome;
@@ -31,36 +28,31 @@ import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 
 
 public class BiomePipelineProvider implements BiomeProvider {
-    private final LoadingCache<SeededVector, BiomeHolder> holderCache;
-    private final BiomePipeline pipeline;
+    private final Operation operation;
+    private final BiomeSource source;
     private final int resolution;
     private final NoiseSampler mutator;
     private final double noiseAmp;
     
     private final Set<Biome> biomes;
     
-    public BiomePipelineProvider(BiomePipeline pipeline, int resolution, NoiseSampler mutator, double noiseAmp) {
+    private final LoadingCache<SeededVector, Biome> cache;
+    
+    public BiomePipelineProvider(Operation operation, BiomeSource source, int resolution, NoiseSampler mutator, double noiseAmp) {
+        this.operation = operation;
+        this.source = source;
         this.resolution = resolution;
         this.mutator = mutator;
         this.noiseAmp = noiseAmp;
-        holderCache = Caffeine.newBuilder()
-                              .maximumSize(1024)
-                              .build(key -> pipeline.getBiomes(key.x, key.z, key.seed));
-        this.pipeline = pipeline;
-        
-        Set<BiomeDelegate> biomeSet = new HashSet<>();
-        pipeline.getSource().getBiomes().forEach(biomeSet::add);
-        Iterable<BiomeDelegate> result = biomeSet;
-        for(Stage stage : pipeline.getStages()) {
-            result = stage.getBiomes(result); // pass through all stages
-        }
+    
         this.biomes = new HashSet<>();
-        Iterable<BiomeDelegate> finalResult = result;
+    
+        Collection<BiomeDelegate> result = operation.getBiomes(source);
         result.forEach(biomeDelegate -> {
             if(biomeDelegate.isEphemeral()) {
                 
                 StringBuilder biomeList = new StringBuilder("\n");
-                StreamSupport.stream(finalResult.spliterator(), false)
+                result.stream()
                              .sorted(Comparator.comparing(StringIdentifiable::getID))
                              .forEach(delegate -> biomeList
                                      .append("    - ")
@@ -74,6 +66,11 @@ public class BiomePipelineProvider implements BiomeProvider {
             }
             this.biomes.add(biomeDelegate.getBiome());
         });
+        
+        this.cache = Caffeine
+                .newBuilder()
+                .maximumSize(2048)
+                .build(vec -> operation.getBiome(vec.x, vec.z, vec.seed, source).getBiome());
     }
     
     @Override
@@ -84,15 +81,8 @@ public class BiomePipelineProvider implements BiomeProvider {
     public Biome getBiome(int x, int z, long seed) {
         x += mutator.noise(seed + 1, x, z) * noiseAmp;
         z += mutator.noise(seed + 2, x, z) * noiseAmp;
-    
-    
-        x /= resolution;
-        z /= resolution;
-    
-        int fdX = FastMath.floorDiv(x, pipeline.getSize());
-        int fdZ = FastMath.floorDiv(z, pipeline.getSize());
-        return holderCache.get(new SeededVector(fdX, fdZ, seed)).getBiome(x - fdX * pipeline.getSize(),
-                                                                          z - fdZ * pipeline.getSize()).getBiome();
+        
+        return cache.get(new SeededVector(x / resolution, z / resolution, seed));
     }
     
     @Override
@@ -115,7 +105,7 @@ public class BiomePipelineProvider implements BiomeProvider {
         return resolution;
     }
     
-    private record SeededVector(int x, int z, long seed) {
+    public record SeededVector(int x, int z, long seed) {
         @Override
         public boolean equals(Object obj) {
             if(obj instanceof SeededVector that) {
@@ -123,7 +113,7 @@ public class BiomePipelineProvider implements BiomeProvider {
             }
             return false;
         }
-    
+        
         @Override
         public int hashCode() {
             int code = x;
